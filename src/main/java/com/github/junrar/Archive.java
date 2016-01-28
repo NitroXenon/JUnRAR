@@ -168,6 +168,15 @@ public class Archive implements Closeable {
 	}
 
 	/**
+	 * Gets all of the headers in the archive.
+     *
+     * @return returns the headers.
+	 */
+	public List<BaseBlock> getHeaders() {
+		return new ArrayList<BaseBlock>(headers);
+	}
+
+	/**
 	 * @return returns all file headers of the archive
 	 */
 	public List<FileHeader> getFileHeaders() {
@@ -429,7 +438,7 @@ public class Archive implements Closeable {
 	 * Extract the file specified by the given header and write it to the
 	 * supplied output stream
 	 * 
-	 * @param header
+	 * @param hd
 	 *            the header to be extracted
 	 * @param os
 	 *            the outputstream
@@ -455,7 +464,7 @@ public class Archive implements Closeable {
 	 * stream it. Please note that this method will create a new Thread and an a
 	 * pair of Pipe streams.
 	 * 
-	 * @param header
+	 * @param hd
 	 *            the header to be extracted
 	 * @throws RarException
 	 * @throws IOException
