@@ -25,14 +25,16 @@ public class ExtractArchive {
 		this.logger = logger;
 	}
 	
-	public void extractArchive(File archive, File destination) {
+	public void extractArchive(File archive, File destination) throws RarException, IOException {
 		Archive arch = null;
 		try {
 			arch = new Archive(archive);
 		} catch (RarException e) {
 			logError(e);
+			throw e;
 		} catch (IOException e1) {
 			logError(e1);
+			throw e1;
 		}
 		if (arch != null) {
 			if (arch.isEncrypted()) {
@@ -63,8 +65,10 @@ public class ExtractArchive {
 						}
 					} catch (IOException e) {
 						logError(e, "error extracting the file");
+						throw e;
 					} catch (RarException e) {
 						logError(e,"error extraction the file");
+						throw e;
 					}
 				}
 			}finally {
