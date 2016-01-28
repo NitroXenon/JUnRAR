@@ -1,4 +1,4 @@
 JUnrar
 =====
 
-Integrated various fixes (see the history).
+Integrated various fixes (see history).
