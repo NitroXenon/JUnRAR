@@ -75,10 +75,10 @@
 					<archive>
 						<manifest>
 							<mainClass>
-								de.innosystec.unrar.testutil.JUnRarTestUtil
+								com.github.junrar.testUtil.JUnRarTestUtil
 							</mainClass>
 							<packageName>
-								de.innosystec.unrar.testutil
+								com.github.junrar.testUtil
 							</packageName>
 							<addClasspath>true</addClasspath>
 							<addExtensions />
