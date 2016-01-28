@@ -39,6 +39,12 @@ public class ExtractArchive {
 		if (arch != null) {
 			if (arch.isEncrypted()) {
 				logWarn("archive is encrypted cannot extract");
+				try {
+					arch.close();
+				}
+				catch (Exception e) {
+					logError(e);
+				}
 				return;
 			}
 			try{
