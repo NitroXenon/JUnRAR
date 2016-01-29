@@ -22,6 +22,10 @@ public class RarExtractor {
 
 	private static Log logger = LogFactory.getLog(RarExtractor.class);
 
+	public void extractArchive(String archive, String destination) throws RarException, IOException {
+		extractArchive(new File(archive), new File(destination));
+	}
+
 	public void extractArchive(File archive, File destination) throws RarException, IOException {
 		Archive arch = null;
 		try {

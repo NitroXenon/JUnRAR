@@ -3,7 +3,7 @@
 	<groupId>junrar</groupId>
 	<artifactId>junrar</artifactId>
 	<packaging>jar</packaging>
-	<version>0.8-albertus</version>
+	<version>0.9-albertus</version>
 	<name>JUnRAR</name>
 	<description>RAR decompression library in plain Java</description>
 	<url>https://github.com/Albertus82/JUnrar</url>
