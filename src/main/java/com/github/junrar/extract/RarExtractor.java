@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
@@ -17,14 +18,10 @@ import com.github.junrar.rarfile.FileHeader;
  * @author edmund wagner
  * 
  */
-public class ExtractArchive {
+public class RarExtractor {
 
-	private Log logger;
+	private static Log logger = LogFactory.getLog(RarExtractor.class);
 
-	public void setLogger(Log logger) {
-		this.logger = logger;
-	}
-	
 	public void extractArchive(File archive, File destination) throws RarException, IOException {
 		Archive arch = null;
 		try {
