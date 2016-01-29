@@ -223,15 +223,16 @@ public class FileHeader extends BlockHeader {
     }
 
     private Date getDateDos(int time) {
-	Calendar cal = Calendar.getInstance();
-	cal.set(Calendar.YEAR, (time >>> 25) + 1980);
-	cal.set(Calendar.MONTH, ((time >>> 21) & 0x0f) - 1);
-	cal.set(Calendar.DAY_OF_MONTH, (time >>> 16) & 0x1f);
-	cal.set(Calendar.HOUR_OF_DAY, (time >>> 11) & 0x1f);
-	cal.set(Calendar.MINUTE, (time >>> 5) & 0x3f);
-	cal.set(Calendar.SECOND, (time & 0x1f) * 2);
-	cal.set(Calendar.MILLISECOND, 0);
-	return cal.getTime();
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.YEAR, (time >>> 25) + 1980);
+		cal.set(Calendar.MONTH, ((time >>> 21) & 0x0f) - 1);
+		cal.set(Calendar.DAY_OF_MONTH, (time >>> 16) & 0x1f);
+		cal.set(Calendar.HOUR_OF_DAY, (time >>> 11) & 0x1f);
+		cal.set(Calendar.MINUTE, (time >>> 5) & 0x3f);
+		cal.set(Calendar.SECOND, (time & 0x1f) * 2);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
     }
 
     public Date getArcTime() {
