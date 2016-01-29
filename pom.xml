@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.github.junrar</groupId>
+	<groupId>junrar</groupId>
 	<artifactId>junrar</artifactId>
 	<packaging>jar</packaging>
 	<version>0.8-albertus</version>
-	<name>Java UnRAR</name>
-	<description>rar decompression library in plain java</description>
+	<name>JUnRAR</name>
+	<description>RAR decompression library in plain Java</description>
 	<url>https://github.com/Albertus82/JUnrar</url>
 
 	<properties>
@@ -23,9 +23,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git@github.com:junrar/junrar.git</connection>
-		<developerConnection>scm:git:git@github.com:junrar/junrar.git</developerConnection>
-		<url>git@github.com:junrar/junrar.git</url>
+		<connection>scm:git:git@github.com:albertus82/junrar.git</connection>
+		<developerConnection>scm:git:git@github.com:albertus82/junrar.git</developerConnection>
+		<url>git@github.com:albertus82/junrar.git</url>
 	</scm>
 
 	<developers>
