@@ -8,3 +8,4 @@ JUnRAR
 * Fixed minor bug that caused inaccurate file times (see [this pull request](https://github.com/edmund-wagner/junrar/pull/20), thanks to [Luke Quinane](https://github.com/tmyroadctfig)).
 * Multi-volume archives are supported in both old and new flavours (`.rXX` & `.partX.rar`).
 * **Encrypted and password protected archives are not yet supported.**
+* **RAR 5 format is not supported**
