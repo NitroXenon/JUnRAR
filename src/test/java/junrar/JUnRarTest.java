@@ -59,7 +59,7 @@ public class JUnRarTest {
 	}
 
 	@Test
-	public void bestSolidMultivolOld() throws IOException, RarException {
+	public void bestSolidMultiOld() throws IOException, RarException {
 		testArchive("best_solid_multi_old.rar", "best_solid_multi_old.r00", "best_solid_multi_old.r01");
 	}
 
@@ -69,7 +69,7 @@ public class JUnRarTest {
 	}
 
 	@Test
-	public void fasterMultivolNew() throws IOException, RarException {
+	public void fastestRecoveryLockMultiNew() throws IOException, RarException {
 		testArchive("fastest_recovery_lock_multi_new.part1.rar", "fastest_recovery_lock_multi_new.part2.rar", "fastest_recovery_lock_multi_new.part3.rar");
 	}
 
