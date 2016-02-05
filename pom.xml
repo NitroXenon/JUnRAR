@@ -77,10 +77,10 @@
 					<archive>
 						<manifest>
 							<mainClass>
-								junrar.testUtil.JUnRarTestUtil
+								junrar.JUnRarTest
 							</mainClass>
 							<packageName>
-								junrar.testUtil
+								junrar
 							</packageName>
 							<addClasspath>true</addClasspath>
 							<addExtensions />
