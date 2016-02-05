@@ -30,25 +30,30 @@ public class RarExtractor {
 		Archive arch = null;
 		try {
 			arch = new Archive(archive);
-		} catch (RarException e) {
-			logError(e);
-			throw e;
-		} catch (IOException e1) {
-			logError(e1);
-			throw e1;
+		}
+		catch (RarException re) {
+			logger.error(re);
+			throw re;
+		}
+		catch (IOException ioe) {
+			logger.error(ioe);
+			throw ioe;
 		}
 		if (arch != null) {
 			if (arch.isEncrypted()) {
-				logWarn("archive is encrypted cannot extract");
+				logger.warn("Unsupported encrypted archive " + archive.getName());
 				try {
 					arch.close();
 				}
 				catch (Exception e) {
-					logError(e);
+					logger.warn(e);
 				}
 				return;
 			}
-			try{
+			else {
+				logger.info("Extracting from " + archive.getName());
+			}
+			try {
 				FileHeader fh = null;
 				while (true) {
 					fh = arch.nextFileHeader();
@@ -57,51 +62,51 @@ public class RarExtractor {
 					}
 					String fileNameString = fh.getFileNameString();
 					if (fh.isEncrypted()) {
-						logWarn("file is encrypted cannot extract: "+ fileNameString);
+						logger.warn("Unsupported encrypted file " + fileNameString);
 						continue;
 					}
-					logInfo("extracting: " + fileNameString);
+					OutputStream stream = null;
 					try {
 						if (fh.isDirectory()) {
 							createDirectory(fh, destination);
-						} else {
-							File f = createFile(fh, destination);
-							OutputStream stream = new FileOutputStream(f);
-							arch.extractFile(fh, stream);
-							stream.close();
 						}
-					} catch (IOException e) {
-						logError(e, "error extracting the file");
-						throw e;
-					} catch (RarException e) {
-						logError(e,"error extraction the file");
-						throw e;
+						else {
+							logger.info("Extracting  " + fileNameString);
+							File f = createFile(fh, destination);
+							stream = new FileOutputStream(f);
+							arch.extractFile(fh, stream);
+						}
+					}
+					catch (IOException ioe) {
+						logger.error("Error extracting  " + fileNameString, ioe);
+						throw ioe;
+					}
+					catch (RarException re) {
+						logger.error("Error extracting  " + fileNameString, re);
+						throw re;
+					}
+					finally {
+						try {
+							if (stream != null) {
+								stream.close();
+							}
+						}
+						catch (Exception e) {
+							logger.warn(e);
+						}
 					}
 				}
-			}finally {
+			}
+			finally {
 				try {
 					arch.close();
-				} catch (IOException e) {
-					logError(e);
+					logger.info("Extraction completed.");
+				}
+				catch (Exception e) {
+					logger.warn(e);
 				}
 			}
 		}
-	}
-
-	private void logWarn(String warning) {
-		if(logger!=null) logger.warn(warning);
-	}
-
-	private void logInfo(String info) {
-		if(logger!=null) logger.info(info);
-	}
-
-	private void logError(Exception e, String errorMessage) {
-		if(logger!=null) logger.error(errorMessage, e);
-	}
-
-	private void logError(Exception e) {
-		if(logger!=null) logger.error(e);
 	}
 
 	private File createFile(FileHeader fh, File destination) {
@@ -109,22 +114,23 @@ public class RarExtractor {
 		String name = null;
 		if (fh.isFileHeader() && fh.isUnicode()) {
 			name = fh.getFileNameW();
-		} else {
+		}
+		else {
 			name = fh.getFileNameString();
 		}
 		f = new File(destination, name);
 		if (!f.exists()) {
 			try {
 				f = makeFile(destination, name);
-			} catch (IOException e) {
-				logError(e, "error creating the new file: " + f.getName());
+			}
+			catch (IOException e) {
+				logger.error("Error creating the new file  " + f.getName(), e);
 			}
 		}
 		return f;
 	}
 
-	private static File makeFile(File destination, String name)
-			throws IOException {
+	private static File makeFile(File destination, String name) throws IOException {
 		String[] dirs = name.split("\\\\");
 		if (dirs == null) {
 			return null;
@@ -133,7 +139,8 @@ public class RarExtractor {
 		int size = dirs.length;
 		if (size == 1) {
 			return new File(destination, name);
-		} else if (size > 1) {
+		}
+		else if (size > 1) {
 			for (int i = 0; i < dirs.length - 1; i++) {
 				path = path + File.separator + dirs[i];
 				new File(destination, path).mkdir();
@@ -142,7 +149,8 @@ public class RarExtractor {
 			File f = new File(destination, path);
 			f.createNewFile();
 			return f;
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -154,7 +162,8 @@ public class RarExtractor {
 			if (!f.exists()) {
 				makeDirectory(destination, fh.getFileNameW());
 			}
-		} else if (fh.isDirectory() && !fh.isUnicode()) {
+		}
+		else if (fh.isDirectory() && !fh.isUnicode()) {
 			f = new File(destination, fh.getFileNameString());
 			if (!f.exists()) {
 				makeDirectory(destination, fh.getFileNameString());
