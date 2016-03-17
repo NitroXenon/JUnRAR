@@ -9,3 +9,10 @@ JUnRAR
 * Multi-volume archives are supported in both old and new flavours (`.rXX` & `.partX.rar`).
 * **Encrypted and password protected archives are not yet supported.**
 * **RAR 5 format is not supported**.
+
+#### Fork used in http://bonzaireader.com
+* Support for streaming RAR from any InputStream
+* ** Use Archive.getAsyncFileHeaders to asynchronously scan the FileHeader
+* ** Use Archive.extractFile to extract from a scanned FileHeader
+* Removes vfs support
+* http://stackoverflow.com/questions/24113840/how-to-decompress-a-rar-file-in-android-application-with-out-of-memory-exception
