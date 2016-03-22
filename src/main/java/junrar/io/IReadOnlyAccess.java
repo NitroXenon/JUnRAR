@@ -27,6 +27,8 @@ import java.io.IOException;
  * @version $LastChangedRevision$
  */
 public interface IReadOnlyAccess {
+	
+	public IReadOnlyAccess view();
 
 	/**
 	 * @return the current position in the file

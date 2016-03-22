@@ -63,20 +63,22 @@ public class Archive implements Closeable {
 	private static Logger logger = Logger.getLogger(Archive.class.getName());
 
 	private IReadOnlyAccess rof;
+	
+	private long rofLength;
 
 	private final UnrarCallback unrarCallback;
 
 	private final ComprDataIO dataIO;
 
-	private final List<BaseBlock> headers = new ArrayList<BaseBlock>();
+	private final List<BaseBlock> headers = new ArrayList<>();
+	
+	private boolean headerRead;
 
 	private MarkHeader markHead = null;
 
 	private MainHeader newMhd = null;
 
 	private Unpack unpack;
-
-	private int currentHeaderIndex;
 
 	/** Size of packed data in current file. */
 	private long totalPackedSize = 0L;
@@ -117,27 +119,33 @@ public class Archive implements Closeable {
 			throws RarException, IOException {
 		this(new FileVolumeManager(firstVolume), unrarCallback);
 	}
-
-	// public File getFile() {
-	// return file;
-	// }
-	//
-	// void setFile(File file) throws IOException {
-	// this.file = file;
-	// setFile(new ReadOnlyAccessFile(file), file.length());
-	// }
+	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(" + volumeManager.toString() + ")";
+	}
 
 	private void setFile(IReadOnlyAccess file, long length) throws IOException {
 		totalPackedSize = 0L;
 		totalPackedRead = 0L;
 		close();
 		rof = file;
+		rofLength = length;
+		headerRead = false;
+	}
+	
+	private boolean initialize(HeaderCallback headerCallback) {
+		if (headerRead) {
+			return false;
+		}
+		headerRead = true;
+		
 		try {
-			readHeaders(length);
+			readHeaders(headerCallback);
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"exception in archive constructor maybe file is encrypted "
-							+ "or currupt", e);
+							+ "or currupt: " + toString(), e);
 			// ignore exceptions to allow exraction of working files in
 			// corrupt archive
 		}
@@ -151,6 +159,7 @@ public class Archive implements Closeable {
 			unrarCallback.volumeProgressChanged(totalPackedRead,
 					totalPackedSize);
 		}
+		return true;
 	}
 
 	public void bytesReadRead(int count) {
@@ -163,24 +172,20 @@ public class Archive implements Closeable {
 		}
 	}
 
-	public IReadOnlyAccess getRof() {
-		return rof;
-	}
-
 	/**
 	 * Gets all of the headers in the archive.
      *
      * @return returns the headers.
 	 */
 	public List<BaseBlock> getHeaders() {
-		return new ArrayList<BaseBlock>(headers);
+		return new ArrayList<>(headers);
 	}
 
 	/**
 	 * @return returns all file headers of the archive
 	 */
 	public List<FileHeader> getFileHeaders() {
-		List<FileHeader> list = new ArrayList<FileHeader>();
+		List<FileHeader> list = new ArrayList<>();
 		for (BaseBlock block : headers) {
 			if (block.getHeaderType().equals(UnrarHeadertype.FileHeader)) {
 				list.add((FileHeader) block);
@@ -188,16 +193,13 @@ public class Archive implements Closeable {
 		}
 		return list;
 	}
-
-	public FileHeader nextFileHeader() {
-		int n = headers.size();
-		while (currentHeaderIndex < n) {
-			BaseBlock block = headers.get(currentHeaderIndex++);
-			if (block.getHeaderType() == UnrarHeadertype.FileHeader) {
-				return (FileHeader) block;
+	
+	public void getAsyncFileHeaders(HeaderCallback headerCallback) {
+		if (!initialize(headerCallback)) {
+			for (FileHeader fileHeader : getFileHeaders()) {
+				headerCallback.onFileHeader(fileHeader);
 			}
 		}
-		return null;
 	}
 
 	public UnrarCallback getUnrarCallback() {
@@ -209,6 +211,7 @@ public class Archive implements Closeable {
 	 * @return whether the archive is encrypted
 	 */
 	public boolean isEncrypted() {
+		initialize(null);
 		if (newMhd != null) {
 			return newMhd.isEncrypted();
 		} else {
@@ -223,11 +226,10 @@ public class Archive implements Closeable {
 	 *            Length of file.
 	 * @throws RarException
 	 */
-	private void readHeaders(long fileLength) throws IOException, RarException {
+	private void readHeaders(HeaderCallback headerCallback) throws IOException, RarException {
 		markHead = null;
 		newMhd = null;
 		headers.clear();
-		currentHeaderIndex = 0;
 		int toRead = 0;
 
 		while (true) {
@@ -238,7 +240,7 @@ public class Archive implements Closeable {
 			long position = rof.getPosition();
 
 			// Weird, but is trying to read beyond the end of the file
-			if (position >= fileLength) {
+			if (position >= rofLength) {
 				break;
 			}
 
@@ -354,6 +356,9 @@ public class Archive implements Closeable {
 					newpos = fh.getPositionInFile() + fh.getHeaderSize()
 							+ fh.getFullPackSize();
 					rof.setPosition(newpos);
+					if (headerCallback != null) {
+						headerCallback.onFileHeader(fh);
+					}
 					break;
 
 				case ProtectHeader:
@@ -478,6 +483,7 @@ public class Archive implements Closeable {
 		// creates a new thread that will write data to the pipe. Data will be
 		// available in another InputStream, connected to the OutputStream.
 		new Thread(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					extractFile(hd, out);
@@ -497,7 +503,7 @@ public class Archive implements Closeable {
 	private void doExtractFile(FileHeader hd, OutputStream os)
 			throws RarException, IOException {
 		dataIO.init(os);
-		dataIO.init(hd);
+		dataIO.init(hd, rof.view());
 		dataIO.setUnpFileCRC(this.isOldFormat() ? 0 : 0xffFFffFF);
 		if (unpack == null) {
 			unpack = new Unpack(dataIO);
@@ -537,6 +543,7 @@ public class Archive implements Closeable {
 	 * @return returns the main header of this archive
 	 */
 	public MainHeader getMainHeader() {
+		initialize(null);
 		return newMhd;
 	}
 
@@ -544,10 +551,12 @@ public class Archive implements Closeable {
 	 * @return whether the archive is old format
 	 */
 	public boolean isOldFormat() {
+		initialize(null);
 		return markHead.isOldFormat();
 	}
 
 	/** Close the underlying compressed file. */
+	@Override
 	public void close() throws IOException {
 		if (rof != null) {
 			rof.close();
@@ -588,5 +597,18 @@ public class Archive implements Closeable {
 	public void setVolume(Volume volume) throws IOException {
 		this.volume = volume;
 		setFile(volume.getReadOnlyAccess(), volume.getLength());
+	}
+	
+	public boolean setVolume(Volume volume, ComprDataIO dataIO) throws IOException {
+		setVolume(volume);
+		
+		List<FileHeader> fileHeaders = getFileHeaders();
+		if (fileHeaders.isEmpty()) {
+			return false;
+		}
+		FileHeader fileHeader = fileHeaders.get(0);
+		headers.remove(fileHeader);
+		dataIO.init(fileHeader, rof.view());
+		return true;
 	}
 }

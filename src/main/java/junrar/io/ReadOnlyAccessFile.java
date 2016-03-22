@@ -31,25 +31,40 @@ import java.io.RandomAccessFile;
 public class ReadOnlyAccessFile extends RandomAccessFile
         implements IReadOnlyAccess{
 
+	private final File file;
+	
 	/**
 	 * @param file the file
 	 * @throws FileNotFoundException
 	 */
 	public ReadOnlyAccessFile(File file) throws FileNotFoundException {
 		super(file, "r");
+		this.file = file;
 	}
 
+	@Override
 	public int readFully(byte[] buffer, int count) throws IOException {
         assert (count > 0) : count;
         this.readFully(buffer, 0, count);
         return count;
     }
 
+	@Override
 	public long getPosition() throws IOException {
         return this.getFilePointer();
 	}
 
+	@Override
 	public void setPosition(long pos) throws IOException {
         this.seek(pos);
+	}
+	
+	@Override
+	public IReadOnlyAccess view() {
+		try {
+			return new ReadOnlyAccessFile(file);
+		} catch(FileNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 }

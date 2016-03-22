@@ -21,13 +21,13 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import junrar.Archive;
 import junrar.UnrarCallback;
 import junrar.Volume;
 import junrar.crc.RarCRC;
 import junrar.exception.RarException;
 import junrar.exception.RarException.RarExceptionType;
+import junrar.io.IReadOnlyAccess;
 import junrar.io.ReadOnlyAccessInputStream;
 import junrar.rarfile.FileHeader;
 
@@ -99,10 +99,10 @@ public class ComprDataIO {
 		processedArcSize = totalArcSize = 0;
 	}
 
-	public void init(FileHeader hd) throws IOException {
+	public void init(FileHeader hd, IReadOnlyAccess rof) throws IOException {
 		long startPos = hd.getPositionInFile() + hd.getHeaderSize();
 		unpPackedSize = hd.getFullPackSize();
-		inputStream = new ReadOnlyAccessInputStream(archive.getRof(), startPos,
+		inputStream = new ReadOnlyAccessInputStream(rof, startPos,
 				startPos + unpPackedSize);
 		subHead = hd;
 		curUnpRead = 0;
@@ -149,12 +149,9 @@ public class ComprDataIO {
 						&& !callback.isNextVolumeReady(nextVolume)) {
 					return -1;
 				}
-				archive.setVolume(nextVolume);
-				hd = archive.nextFileHeader();
-				if (hd == null) {
+				if (!archive.setVolume(nextVolume, this)) {
 					return -1;
 				}
-				this.init(hd);
 			} else {
 				break;
 			}
